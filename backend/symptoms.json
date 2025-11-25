@@ -1,0 +1,10 @@
+{
+  "Asthma": ["Shortness of breath", "Chest tightness", "Wheezing"],
+  "Bronchiectasis": ["Chronic cough", "Fatigue", "Recurrent infections"],
+  "Bronchiolitis": ["Rapid breathing", "Cough", "Wheezing in infants"],
+  "COPD": ["Chronic bronchitis", "Excess mucus", "Breathing difficulty"],
+  "Healthy": ["No abnormal symptoms", "Normal breathing"],
+  "LRTI": ["Fever", "Cough with phlegm", "Fatigue"],
+  "Pneumonia": ["Chest pain", "Wet cough", "Shortness of breath"],
+  "URTI": ["Sneezing", "Runny nose", "Mild cough"]
+}

@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartRespire — AI Respiratory Analysis</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0f6cff;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --glass: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* Animated background particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: float 15s infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0) translateX(0);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-100vh) translateX(50px);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            max-width: 1400px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 450px 1fr;
+            gap: 30px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Glass morphism cards */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            padding: 32px;
+            transition: transform 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Left Panel */
+        .control-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 8px;
+        }
+
+        .logo {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 800;
+            color: white;
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .brand-text h1 {
+            font-size: 28px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .brand-text p {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .hero-box {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .hero-box h2 {
+            color: white;
+            font-size: 20px;
+            margin-bottom: 12px;
+        }
+
+        .hero-box p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* Recording Section */
+        .recording-section {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .rec-controls {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .rec-button {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: 4px solid white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+        }
+
+        .rec-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 32px rgba(102, 126, 234, 0.6);
+        }
+
+        .rec-button.recording {
+            animation: record-pulse 1s infinite;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        @keyframes record-pulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+
+            50% {
+                box-shadow: 0 0 0 15px rgba(239, 68, 68, 0);
+            }
+        }
+
+        .rec-button svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        .rec-info {
+            flex: 1;
+        }
+
+        .rec-status {
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .rec-hint {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 13px;
+        }
+
+        .waveform {
+            height: 60px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 13px;
+            margin-bottom: 16px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .wave-bars {
+            display: flex;
+            gap: 3px;
+            height: 100%;
+            align-items: center;
+        }
+
+        .wave-bar {
+            width: 3px;
+            background: linear-gradient(to top, #667eea, #764ba2);
+            border-radius: 2px;
+            animation: wave 1s ease-in-out infinite;
+        }
+
+        @keyframes wave {
+
+            0%,
+            100% {
+                height: 20%;
+            }
+
+            50% {
+                height: 80%;
+            }
+        }
+
+        .btn {
+            padding: 14px 24px;
+            border-radius: 12px;
+            border: none;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .disclaimer {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        /* Right Panel - Results */
+        .results-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .result-title {
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .confidence-ring {
+            position: relative;
+            width: 100px;
+            height: 100px;
+        }
+
+        .ring-bg {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, #667eea 0%, #764ba2 var(--progress, 0%), rgba(255, 255, 255, 0.2) var(--progress, 0%));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .ring-inner {
+            width: 75%;
+            height: 75%;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .disease-card {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 28px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Disease Image Container with Animations */
+        .disease-image-container {
+            width: 100%;
+            height: 280px;
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 24px;
+            position: relative;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .disease-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .disease-image.loaded {
+            opacity: 1;
+        }
+
+        /* Overlay animations for each disease */
+        .image-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .image-overlay.active {
+            opacity: 1;
+        }
+
+        /* Healthy - Green glow pulse */
+        .healthy-overlay {
+            background: radial-gradient(circle at center, rgba(16, 185, 129, 0.3) 0%, transparent 70%);
+            animation: healthy-glow 3s ease-in-out infinite;
+        }
+
+        @keyframes healthy-glow {
+
+            0%,
+            100% {
+                opacity: 0.4;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.8;
+                transform: scale(1.1);
+            }
+        }
+
+        /* Asthma - Constricting waves */
+        .asthma-overlay {
+            background: repeating-linear-gradient(0deg,
+                    transparent,
+                    transparent 20px,
+                    rgba(245, 158, 11, 0.15) 20px,
+                    rgba(245, 158, 11, 0.15) 40px);
+            animation: asthma-waves 3s linear infinite;
+        }
+
+        @keyframes asthma-waves {
+            0% {
+                transform: translateY(0);
+            }
+
+            100% {
+                transform: translateY(40px);
+            }
+        }
+
+        /* COPD - Irregular flickering */
+        .copd-overlay {
+            background: radial-gradient(circle at 30% 40%, rgba(239, 68, 68, 0.2) 0%, transparent 50%);
+            animation: copd-flicker 4s ease-in-out infinite;
+        }
+
+        @keyframes copd-flicker {
+            0% {
+                opacity: 0.3;
+            }
+
+            25% {
+                opacity: 0.6;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+
+            75% {
+                opacity: 0.7;
+            }
+
+            100% {
+                opacity: 0.3;
+            }
+        }
+
+        /* Pneumonia - Red inflammation pulse */
+        .pneumonia-overlay {
+            background: radial-gradient(circle at 50% 50%, rgba(239, 68, 68, 0.4) 0%, transparent 60%);
+            animation: pneumonia-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pneumonia-pulse {
+
+            0%,
+            100% {
+                opacity: 0.5;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+
+        /* Bronchiectasis - Expanding circles */
+        .bronchiectasis-overlay {
+            background: radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.3) 0%, transparent 50%);
+            animation: bronchiectasis-expand 4s ease-in-out infinite;
+        }
+
+        @keyframes bronchiectasis-expand {
+
+            0%,
+            100% {
+                opacity: 0.4;
+                transform: scale(0.8);
+            }
+
+            50% {
+                opacity: 0.8;
+                transform: scale(1.3);
+            }
+        }
+
+        /* Bronchiolitis - Rapid pulse */
+        .bronchiolitis-overlay {
+            background: radial-gradient(circle at center, rgba(245, 158, 11, 0.3) 0%, transparent 60%);
+            animation: bronchiolitis-rapid 1.5s ease-in-out infinite;
+        }
+
+        @keyframes bronchiolitis-rapid {
+
+            0%,
+            100% {
+                opacity: 0.3;
+            }
+
+            50% {
+                opacity: 0.9;
+            }
+        }
+
+        /* LRTI - Bottom-heavy red glow */
+        .lrti-overlay {
+            background: linear-gradient(to top, rgba(239, 68, 68, 0.4) 0%, transparent 70%);
+            animation: lrti-glow 3s ease-in-out infinite;
+        }
+
+        @keyframes lrti-glow {
+
+            0%,
+            100% {
+                opacity: 0.5;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        /* URTI - Top-heavy yellow glow */
+        .urti-overlay {
+            background: linear-gradient(to bottom, rgba(245, 158, 11, 0.4) 0%, transparent 70%);
+            animation: urti-glow 3s ease-in-out infinite;
+        }
+
+        @keyframes urti-glow {
+
+            0%,
+            100% {
+                opacity: 0.5;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        /* Floating status badge */
+        .status-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+
+        .status-badge.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .status-badge.healthy {
+            color: #10b981;
+        }
+
+        .status-badge.warning {
+            color: #f59e0b;
+        }
+
+        .status-badge.danger {
+            color: #ef4444;
+        }
+
+        .disease-info h3 {
+            color: white;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .disease-confidence {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        .symptoms-section h4 {
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .symptoms-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .symptom-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px 16px;
+            border-radius: 10px;
+            color: white;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+
+        .symptom-item.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .symptom-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(4px);
+        }
+
+        .symptom-icon {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            flex-shrink: 0;
+        }
+
+        .precautions-box {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .precautions-box h4 {
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .precautions-box ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .precautions-box li {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            padding: 8px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .precautions-box li:before {
+            content: "⚠";
+            position: absolute;
+            left: 0;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Placeholder state */
+        .placeholder-text {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 16px;
+            text-align: center;
+            padding: 40px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr;
+                max-width: 600px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Animated background particles -->
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <!-- Left Panel: Controls -->
+        <div class="control-panel">
+            <div class="glass-card">
+                <div class="brand">
+                    <div class="logo">SR</div>
+                    <div class="brand-text">
+                        <h1>SmartRespire</h1>
+                        <p>AI-Powered Respiratory Analysis</p>
+                    </div>
+                </div>
+
+                <div class="hero-box">
+                    <h2>🫁 Analyze Your Breathing</h2>
+                    <p>Record 5-20 seconds of normal breathing in a quiet environment. Our AI will analyze your
+                        respiratory patterns and provide insights.</p>
+                </div>
+            </div>
+
+            <div class="glass-card recording-section">
+                <div class="rec-controls">
+                    <div class="rec-button" id="recBtn">
+                        <svg id="micIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke="white" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                        </svg>
+                    </div>
+                    <div class="rec-info">
+                        <div class="rec-status" id="recStatus">Ready to Record</div>
+                        <div class="rec-hint">Tap the button to start</div>
+                    </div>
+                </div>
+
+                <div class="waveform" id="waveform">
+                    <span id="waveText">Audio waveform will appear here</span>
+                    <div class="wave-bars" id="waveBars" style="display: none;"></div>
+                </div>
+
+                <div style="display: flex; gap: 12px;">
+                    <button class="btn btn-secondary" id="uploadBtn">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        Upload .WAV
+                    </button>
+                    <input type="file" id="fileInput" class="file-input" accept="audio/wav">
+                    <button class="btn btn-primary" id="analyzeBtn" disabled>
+                        <span id="analyzeText">Analyze Audio</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <p class="disclaimer">⚕️ This tool provides informational insights only. Always consult a healthcare
+                    professional for medical advice and diagnosis.</p>
+            </div>
+        </div>
+
+        <!-- Right Panel: Results -->
+        <div class="results-panel">
+            <div class="glass-card">
+                <div class="result-header">
+                    <div class="result-title">Analysis Results</div>
+                    <div class="confidence-ring">
+                        <div class="ring-bg" id="ringBg">
+                            <div class="ring-inner" id="ringValue">--%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="disease-card">
+                    <div class="disease-image-container">
+                        <img id="diseaseImage" class="disease-image" alt="Disease visualization">
+                        <div id="imageOverlay" class="image-overlay"></div>
+                        <div id="statusBadge" class="status-badge"></div>
+                        <div class="placeholder-text" id="placeholderText">
+                            🎤 Record or upload audio to see disease visualization
+                        </div>
+                    </div>
+
+                    <div class="disease-info">
+                        <h3 id="diseaseName">Awaiting Analysis...</h3>
+                        <p class="disease-confidence" id="confidenceText">Upload or record audio to begin</p>
+
+                        <div class="symptoms-section">
+                            <h4>📋 Associated Symptoms</h4>
+                            <div class="symptoms-list" id="symptomsList">
+                                <div class="symptom-item">
+                                    <div class="symptom-icon"></div>
+                                    <span>Record audio to see symptoms</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="precautions-box">
+                            <h4>⚠️ Important Precautions</h4>
+                            <ul>
+                                <li>Consult a healthcare provider for proper diagnosis</li>
+                                <li>Do not use this as a substitute for professional medical advice</li>
+                                <li>Seek immediate care if experiencing severe symptoms</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_URL = 'http://127.0.0.1:5000/predict';
+
+        // Image paths for each disease (UPDATE THESE PATHS)
+        const DISEASE_IMAGES = {
+            'Asthma': './asthma.jpg',
+            'Bronchiectasis': './bronchiectasis.jpg',
+            'Bronchiolitis': './bronchiolitis.webp',
+            'COPD': './copd.jpg',
+            'Healthy': './healthy.jpg',
+            'LRTI': './images/lrti.jpg',
+            'Pneumonia': './images/pneumonia.jpg',
+            'URTI': './images/urti.jpg'
+        };
+
+        // Disease severity levels for badge colors
+        const DISEASE_SEVERITY = {
+            'Healthy': 'healthy',
+            'Asthma': 'warning',
+            'Bronchiolitis': 'warning',
+            'URTI': 'warning',
+            'Bronchiectasis': 'danger',
+            'COPD': 'danger',
+            'LRTI': 'danger',
+            'Pneumonia': 'danger'
+        };
+
+        // DOM Elements
+        const recBtn = document.getElementById('recBtn');
+        const recStatus = document.getElementById('recStatus');
+        const waveform = document.getElementById('waveform');
+        const waveText = document.getElementById('waveText');
+        const waveBars = document.getElementById('waveBars');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const fileInput = document.getElementById('fileInput');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const analyzeText = document.getElementById('analyzeText');
+        const ringBg = document.getElementById('ringBg');
+        const ringValue = document.getElementById('ringValue');
+        const diseaseName = document.getElementById('diseaseName');
+        const confidenceText = document.getElementById('confidenceText');
+        const symptomsList = document.getElementById('symptomsList');
+        const diseaseImage = document.getElementById('diseaseImage');
+        const imageOverlay = document.getElementById('imageOverlay');
+        const statusBadge = document.getElementById('statusBadge');
+        const placeholderText = document.getElementById('placeholderText');
+
+        let mediaRecorder, audioChunks = [], recordedBlob = null;
+
+        // Create animated particles
+        function createParticles() {
+            const particlesEl = document.getElementById('particles');
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                particlesEl.appendChild(particle);
+            }
+        }
+        createParticles();
+
+        // Recording functionality
+        recBtn.addEventListener('click', async () => {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+                recBtn.classList.remove('recording');
+                recStatus.textContent = 'Processing...';
+                waveBars.style.display = 'none';
+                waveText.style.display = 'block';
+                return;
+            }
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+
+                mediaRecorder.onstop = () => {
+                    recordedBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    recStatus.textContent = 'Recording Complete ✓';
+                    waveText.textContent = 'Audio recorded successfully!';
+                    analyzeBtn.disabled = false;
+                };
+
+                mediaRecorder.start();
+                recBtn.classList.add('recording');
+                recStatus.textContent = 'Recording... (tap to stop)';
+
+                // Show animated wave bars
+                waveText.style.display = 'none';
+                waveBars.style.display = 'flex';
+                waveBars.innerHTML = '';
+                for (let i = 0; i < 20; i++) {
+                    const bar = document.createElement('div');
+                    bar.className = 'wave-bar';
+                    bar.style.animationDelay = (i * 0.05) + 's';
+                    bar.style.height = Math.random() * 60 + 20 + '%';
+                    waveBars.appendChild(bar);
+                }
+            } catch (err) {
+                alert('Microphone access denied. Please allow microphone access.');
+            }
+        });
+
+        // Upload functionality
+        uploadBtn.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length) {
+                recordedBlob = fileInput.files[0];
+                recStatus.textContent = 'File Uploaded ✓';
+                waveText.textContent = `📁 ${recordedBlob.name}`;
+                waveBars.style.display = 'none';
+                waveText.style.display = 'block';
+                analyzeBtn.disabled = false;
+            }
+        });
+
+        // Set disease visualization
+        function setDiseaseVisualization(disease) {
+            // Hide placeholder
+            placeholderText.style.display = 'none';
+
+            // Set image source
+            const imagePath = DISEASE_IMAGES[disease] || DISEASE_IMAGES['Healthy'];
+            diseaseImage.src = imagePath;
+
+            // Handle image load
+            diseaseImage.onload = () => {
+                diseaseImage.classList.add('loaded');
+            };
+
+            // Set overlay animation class
+            imageOverlay.className = 'image-overlay active';
+            const overlayClass = disease.toLowerCase() + '-overlay';
+            imageOverlay.classList.add(overlayClass);
+
+            // Set status badge
+            const severity = DISEASE_SEVERITY[disease] || 'warning';
+            statusBadge.className = `status-badge ${severity} show`;
+            statusBadge.textContent = disease === 'Healthy' ? '✓ Healthy' : '⚠ ' + disease;
+        }
+
+        // Analyze functionality
+        analyzeBtn.addEventListener('click', async () => {
+            if (!recordedBlob) {
+                alert('Please record or upload audio first');
+                return;
+            }
+
+            analyzeBtn.disabled = true;
+            analyzeText.innerHTML = '<div class="spinner"></div>';
+
+            const formData = new FormData();
+            const file = recordedBlob instanceof File ? recordedBlob : new File([recordedBlob], 'recording.wav', { type: 'audio/wav' });
+            formData.append('file', file);
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error('Analysis failed');
+
+                const result = await response.json();
+
+                // Update confidence ring
+                const confidence = Math.round(result.confidence);
+                ringBg.style.setProperty('--progress', confidence + '%');
+                ringValue.textContent = confidence + '%';
+
+                // Update disease info
+                diseaseName.textContent = result.disease;
+                confidenceText.textContent = `Confidence: ${confidence}% • Analysis Complete`;
+
+                // Set disease visualization with image and animation
+                setDiseaseVisualization(result.disease);
+
+                // Update symptoms with staggered animation
+                if (result.symptoms && result.symptoms.length > 0) {
+                    symptomsList.innerHTML = result.symptoms.map((symptom, index) => `
+                        <div class="symptom-item" style="animation-delay: ${index * 0.1}s">
+                            <div class="symptom-icon"></div>
+                            <span>${symptom}</span>
+                        </div>
+                    `).join('');
+
+                    // Trigger animation
+                    setTimeout(() => {
+                        document.querySelectorAll('.symptom-item').forEach(item => {
+                            item.classList.add('show');
+                        });
+                    }, 100);
+                } else {
+                    symptomsList.innerHTML = '<div class="symptom-item show"><div class="symptom-icon"></div><span>No symptoms data available</span></div>';
+                }
+
+            } catch (error) {
+                alert('Error: ' + error.message);
+                diseaseName.textContent = 'Analysis Failed';
+                confidenceText.textContent = 'Please try again';
+            } finally {
+                analyzeBtn.disabled = false;
+                analyzeText.textContent = 'Analyze Audio';
+            }
+        });
+    </script>
+</body>
+
+</html>
