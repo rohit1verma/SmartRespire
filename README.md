@@ -1,12 +1,6 @@
 # SmartRespire
 
-![SmartRespire Banner](https://imgur.com/your-banner-image.png)
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Python-3.8%2B-blue" alt="Python Version">
-  <img src="https://img.shields.io/badge/License-MIT-green" alt="License">
-  <img src="https://img.shields.io/badge/AI-Healthcare-orange" alt="AI Healthcare">
-</p>
 
 ## 🌟 Overview
 
